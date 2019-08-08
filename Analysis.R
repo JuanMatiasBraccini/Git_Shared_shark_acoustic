@@ -11,7 +11,7 @@ Detections=read.csv("Detections.csv",stringsAsFactors=F)
 
 # Section 2. Input parameters -------------------------------------------------
 
-
+#test Chris
 # Section 3. Data manipulation section -------------------------------------------------
   #convert some variables to date, time, and remove duplicates
 Detections=Detections%>%mutate(ReleaseLatitude=-abs(ReleaseLatitude),
