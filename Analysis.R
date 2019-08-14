@@ -14,7 +14,7 @@ Detections=read.csv("Detections.csv",stringsAsFactors=F)
 AATAMS.all=read.csv("AATAMS.all.csv",stringsAsFactors=F)
 SMN.all=read.csv("SMN.all.csv",stringsAsFactors=F)
 TAGS=read.csv("TAGS.csv",stringsAsFactors=F)
-
+Receivers=read.csv("Receiver locations.csv",stringsAsFactors=F)
 
 #Reported recaptures
 setwd("U:/Shark")  # working directory
@@ -57,15 +57,17 @@ CP <- subset(Detections, Species =="bronze whaler")
 
 #subsamples unique detection latitudes to map data below
 #not sure if this is the best way to do it Dani, but seems to work, If i didnt R would crash with trying to plot 256,000 detections
-CPUNI <- distinct(CP, Latitude, .keep_all = T)
+CPUNI <- distinct(CP,  Longitude, Latitude, .keep_all = T)
 
 #Mapping relase and detection locations - interatctive map, able to look at the location data
 j <-   leaflet() %>% addProviderTiles("Esri.WorldImagery") 
-j %>%  setView(124,-34,5)  
-j %>%  addCircles(CPUNI$Longitude ,CPUNI$Latitude, color=c('red'),radius=20,opacity = 1,fillOpacity = 1) %>%
-       addCircles(CPTAGS$ReleaseLongitude ,CPTAGS$ReleaseLatitude, color=c('yellow'),radius=50,opacity = 1,fillOpacity = 1)   %>%    
-       addLegend("bottomright", colors=c('red','yellow'),labels = c('Detections','Release Site'), opacity = 1)
-
+j %>%  setView(124,-34,5)  %>%
+       addCircles(Receivers$lon,Receivers$lat, color=c('green'),radius=150,opacity = 1,fillOpacity = 0,label=paste(Receivers$Station))  %>% 
+       addCircles(CPUNI$Longitude ,CPUNI$Latitude, color=c('yellow'),radius=60,opacity = 1,fillOpacity = 1,label=paste(CPTAGS$TagCode),
+                  labelOptions = labelOptions(noHide = F, offset = c(0, -15))) %>% #this line is still needs work
+       addCircles(CPTAGS$ReleaseLongitude ,CPTAGS$ReleaseLatitude, color=c('red'),radius=40,opacity = 1,fillOpacity = 1,label=paste(CPTAGS$TagCode))   %>%    
+              addLegend("bottomright", colors=c('yellow','red','green'),labels = c('Detections','Release Site','Receivers'), opacity = 1)
+ 
 
 # Dates for first and last tagged CP
 (Firsttag=min(CP$ReleaseDate,na.rm=T))
