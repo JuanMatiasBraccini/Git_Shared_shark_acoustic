@@ -27,7 +27,7 @@ close(channel)
 
 # Section 3. Data manipulation section -------------------------------------------------
   #convert some variables to date, time, and remove duplicates
-Detections=Detections%>%mutate(ReleaseLatitude=-abs(ReleaseLatitude),
+Detections <- mutate(Detections, ReleaseLatitude=-abs(ReleaseLatitude),
                                Latitude=-abs(Latitude),
                                ReleaseDate=ymd(ReleaseDate),
                                DateTime.local=ymd_hms(DateTime.local),
@@ -53,18 +53,28 @@ Detections=Detections%>%left_join(TAGS,by=c("Species" = "Species2","TagCode","Se
 CPTAGS <- subset(TAGS, Species2 =="bronze whaler")
 
 # subsampling detection data for Bronzies
-CP <- subset(Detections, Species =="bronze whaler")
+CP <- subset(Detections, Species =="bronze whaler") 
 
 #subsamples unique detection latitudes to map data below
 #not sure if this is the best way to do it Dani, but seems to work, If i didnt R would crash with trying to plot 256,000 detections
-CPUNI <- distinct(CP, Latitude, .keep_all = T)
+CPUNI <- CP %>% 
+  #NAs on release locations for SA sharks (Gulf of st vincent) were replaced with a location
+  mutate(ReleaseLatitude = case_when(ReleaseSite2 == "Gulf St Vincent" & 
+                                       is.na(ReleaseLatitude) ~ "-34.56320",
+                                     TRUE ~ as.character(ReleaseLatitude))) %>% 
+  mutate(ReleaseLongitude = case_when(ReleaseSite2 == "Gulf St Vincent" & 
+                                        is.na(ReleaseLongitude) ~ "138.2406",
+                                      TRUE ~ as.character(ReleaseLongitude))) %>% 
+  distinct(CP, Latitude, .keep_all = T)
+
+
 
 #Mapping relase and detection locations - interatctive map, able to look at the location data
-j <-   leaflet() %>% addProviderTiles("Esri.WorldImagery") 
-j %>%  setView(124,-34,5)  
-j %>%  addCircles(CPUNI$Longitude ,CPUNI$Latitude, color=c('red'),radius=20,opacity = 1,fillOpacity = 1) %>%
-       addCircles(CPTAGS$ReleaseLongitude ,CPTAGS$ReleaseLatitude, color=c('yellow'),radius=50,opacity = 1,fillOpacity = 1)   %>%    
-       addLegend("bottomright", colors=c('red','yellow'),labels = c('Detections','Release Site'), opacity = 1)
+j <-  leaflet() %>% addProviderTiles("Esri.WorldImagery")  %>%  setView(124,-34,5)  
+
+j %>% addCircles(CPUNI$Longitude ,CPUNI$Latitude, color=c('red'),radius=20,opacity = 1,fillOpacity = 1) %>%
+      addCircles(CPTAGS$ReleaseLongitude ,CPTAGS$ReleaseLatitude, color=c('yellow'),radius=50,opacity = 1,fillOpacity = 1)   %>%    
+      addLegend("bottomright", colors=c('red','yellow'),labels = c('Detections','Release Site'), opacity = 1)
 
 
 # Dates for first and last tagged CP
