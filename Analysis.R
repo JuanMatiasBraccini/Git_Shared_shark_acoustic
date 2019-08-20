@@ -5,6 +5,7 @@ library(dplyr)
 library(lubridate)
 library(leaflet)
 library(leaflet.minicharts)
+library(RODBC)
 
 rm(list=ls())  #removes all previous lists
 
@@ -57,7 +58,7 @@ CP <- subset(Detections, Species =="bronze whaler")
 
 #subsamples unique detection latitudes to map data below
 #not sure if this is the best way to do it Dani, but seems to work, If i didnt R would crash with trying to plot 256,000 detections
-<<<<<<< HEAD
+
 CPUNI <- CP %>% 
   #NAs on release locations for SA sharks (Gulf of st vincent) were replaced with a location
   mutate(ReleaseLatitude = case_when(ReleaseSite2 == "Gulf St Vincent" & 
@@ -66,7 +67,7 @@ CPUNI <- CP %>%
   mutate(ReleaseLongitude = case_when(ReleaseSite2 == "Gulf St Vincent" & 
                                         is.na(ReleaseLongitude) ~ "138.2406",
                                       TRUE ~ as.character(ReleaseLongitude))) %>% 
-  distinct(CP, Latitude, .keep_all = T)
+  distinct(Latitude, .keep_all = T)
 
 
 
@@ -77,19 +78,6 @@ j %>% addCircles(CPUNI$Longitude ,CPUNI$Latitude, color=c('red'),radius=20,opaci
       addCircles(CPTAGS$ReleaseLongitude ,CPTAGS$ReleaseLatitude, color=c('yellow'),radius=50,opacity = 1,fillOpacity = 1)   %>%    
       addLegend("bottomright", colors=c('red','yellow'),labels = c('Detections','Release Site'), opacity = 1)
 
-=======
-CPUNI <- distinct(CP,  Longitude, Latitude, .keep_all = T)
-
-#Mapping relase and detection locations - interatctive map, able to look at the location data
-j <-   leaflet() %>% addProviderTiles("Esri.WorldImagery") 
-j %>%  setView(124,-34,5)  %>%
-       addCircles(Receivers$lon,Receivers$lat, color=c('green'),radius=150,opacity = 1,fillOpacity = 0,label=paste(Receivers$Station))  %>% 
-       addCircles(CPUNI$Longitude ,CPUNI$Latitude, color=c('yellow'),radius=60,opacity = 1,fillOpacity = 1,label=paste(CPTAGS$TagCode),
-                  labelOptions = labelOptions(noHide = F, offset = c(0, -15))) %>% #this line is still needs work
-       addCircles(CPTAGS$ReleaseLongitude ,CPTAGS$ReleaseLatitude, color=c('red'),radius=40,opacity = 1,fillOpacity = 1,label=paste(CPTAGS$TagCode))   %>%    
-              addLegend("bottomright", colors=c('yellow','red','green'),labels = c('Detections','Release Site','Receivers'), opacity = 1)
- 
->>>>>>> e1fff08af45947718b051d73cfd676a3c1e34ace
 
 # Dates for first and last tagged CP
 (Firsttag=min(CP$ReleaseDate,na.rm=T))
@@ -100,7 +88,3 @@ j %>%  setView(124,-34,5)  %>%
 (Fistdetect=min(CP$Date.local,na.rm=T))
 (Lastdetect=max(CP$Date.local,na.rm=T))
 
-
-
-
->>>>>>> ee17ae663df1bb2dac5b4c178bf963057767b9e3
